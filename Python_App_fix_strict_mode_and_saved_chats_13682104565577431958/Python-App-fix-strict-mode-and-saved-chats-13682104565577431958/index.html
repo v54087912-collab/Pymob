@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
+    <title>PyMob Pro</title>
+
+    <!-- Tailwind CSS -->
+    <script src="./js/tailwindcss.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: 'var(--color-dark)',
+                        darker: 'var(--color-darker)',
+                        accent: 'var(--color-accent)',
+                        accentHover: 'var(--color-accent-hover)',
+                        surface: 'var(--color-surface)',
+                        border: 'var(--color-border)',
+                        text: 'var(--color-text)',
+                        muted: 'var(--color-text-muted)',
+                        hoverBg: 'var(--color-hover-bg)'
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'monospace'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+
+    <!-- Custom CSS Imported via script.js -->
+
+    <!-- PWA Manifest & Meta Tags -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PyMob">
+    <link rel="icon" type="image/png" href="./assets/icon-192.png">
+    <link rel="apple-touch-icon" href="./assets/icon-192.png">
+</head>
+<body class="bg-darker text-text font-sans h-screen flex flex-col overflow-hidden select-none">
+
+    <!-- Onboarding Overlay (User Details) -->
+    <div id="view-onboarding" class="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-darker hidden">
+        <div class="glass-card w-full max-w-sm rounded-2xl p-8 flex flex-col items-center gap-6 animate-slide-up relative overflow-hidden border border-white/10">
+            <!-- Header -->
+            <div class="text-center z-10">
+                <h1 class="text-2xl font-bold text-white mb-2 tracking-tight">Complete Profile</h1>
+                <p class="text-sm text-gray-400">Tell us a bit about yourself</p>
+            </div>
+
+            <!-- Avatar Upload -->
+            <div class="relative group cursor-pointer z-10" onclick="document.getElementById('input-avatar-onboarding').click()">
+                <div id="onboarding-avatar-preview" class="w-24 h-24 rounded-full bg-surface border-2 border-dashed border-white/20 flex items-center justify-center text-muted overflow-hidden relative">
+                    <i class="fa-solid fa-camera text-2xl"></i>
+                    <img id="onboarding-avatar-img" class="absolute inset-0 w-full h-full object-cover hidden">
+                </div>
+                <div class="absolute -bottom-2 -right-2 bg-accent text-black rounded-full w-8 h-8 flex items-center justify-center border-2 border-darker">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                </div>
+            </div>
+            <input type="file" id="input-avatar-onboarding" accept="image/*" class="hidden">
+
+            <!-- Form -->
+            <div class="w-full flex flex-col gap-4 z-10">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" id="onboarding-firstname" placeholder="First Name" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-accent placeholder-gray-500">
+                    <input type="text" id="onboarding-surname" placeholder="Surname" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-accent placeholder-gray-500">
+                </div>
+                <button id="btn-save-onboarding" class="w-full bg-accent text-black font-bold py-3 rounded-xl hover:bg-accentHover transition-transform active:scale-95 shadow-lg shadow-green-900/20">
+                    Save & Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Overlay (Force Login) -->
+    <div id="login-overlay" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md transition-opacity duration-500">
+        <div class="glass-card w-full max-w-sm rounded-2xl p-8 flex flex-col items-center gap-6 animate-slide-up relative overflow-hidden">
+            <!-- Glow Effect -->
+            <div class="absolute -top-20 -left-20 w-40 h-40 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-20 -right-20 w-40 h-40 bg-green-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <!-- Header -->
+            <div class="text-center z-10">
+                <h1 class="text-2xl font-bold text-white mb-2 tracking-tight">Welcome to PyMob</h1>
+                <p class="text-sm text-gray-400">Sign in to access the IDE</p>
+            </div>
+
+            <!-- Email Auth Form -->
+            <div class="w-full flex flex-col gap-3 z-10">
+                <input type="email" id="force-email" placeholder="Email Address" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500/50 placeholder-gray-500 transition-colors">
+                <input type="password" id="force-password" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500/50 placeholder-gray-500 transition-colors">
+
+                <div class="flex gap-3 mt-2">
+                    <button id="btn-force-login" class="flex-1 bg-cyan-500/10 text-cyan-400 font-bold py-3 rounded-xl hover:bg-cyan-500/20 border border-cyan-500/20 transition-all active:scale-95">
+                        Log In
+                    </button>
+                    <button id="btn-force-signup" class="flex-1 bg-white/5 text-gray-300 font-bold py-3 rounded-xl hover:bg-white/10 border border-white/10 transition-all active:scale-95">
+                        Sign Up
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Content Wrapper -->
+    <div id="app-content" class="flex flex-col h-full w-full transition-all duration-500 filter blur-sm pointer-events-none">
+
+    <!-- Loading View -->
+    <div id="view-loading" class="fixed inset-0 bg-black z-[90] flex flex-col items-center justify-center p-6 hidden">
+        <div class="relative w-16 h-16 mb-6">
+            <div class="absolute inset-0 border-4 border-surface rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-accent rounded-full border-t-transparent animate-spin"></div>
+        </div>
+        <h2 class="text-xl font-bold text-white mb-2">Initializing Environment</h2>
+        <p id="loading-text" class="text-gray-400 text-sm">Loading Python Engine...</p>
+    </div>
+
+    <!-- Top App Bar -->
+    <header class="safe-top bg-dark flex items-center justify-between px-4 border-b border-border z-50 shrink-0 relative">
+        <!-- Left: Menu -->
+        <button id="btn-toggle-sidebar" class="w-10 h-10 flex items-center justify-center text-muted hover:text-text active:scale-95">
+            <i class="fa-solid fa-bars text-lg"></i>
+        </button>
+
+        <!-- Sidebar (Me Menu) -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-[60] hidden backdrop-blur-sm transition-opacity"></div>
+        <div id="sidebar-menu" class="fixed top-0 left-0 bottom-0 w-72 bg-surface z-[70] transform -translate-x-full transition-transform duration-300 shadow-2xl flex flex-col border-r border-border">
+            <!-- Header -->
+            <div class="h-36 bg-gradient-to-br from-green-900 to-dark p-6 flex flex-col justify-end relative">
+                <button id="btn-close-sidebar" class="absolute top-4 right-4 text-white/50 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+                <div class="flex items-center gap-4">
+                    <div id="sidebar-avatar-container" class="w-12 h-12 rounded-full bg-accent flex items-center justify-center text-black font-bold text-xl shadow-lg overflow-hidden relative cursor-pointer shrink-0">
+                        <span id="sidebar-avatar-placeholder">GD</span>
+                        <img id="sidebar-avatar-img" src="" class="absolute inset-0 w-full h-full object-cover hidden" alt="User Avatar">
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span id="sidebar-username" class="font-bold text-text text-lg truncate">Guest Developer</span>
+                            <button id="btn-edit-profile" class="text-muted hover:text-white transition-colors">
+                                <i class="fa-solid fa-pencil text-xs"></i>
+                            </button>
+                        </div>
+                        <span id="sidebar-email" class="text-xs text-muted truncate block">Not logged in</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools List -->
+            <div class="flex-1 overflow-y-auto py-2 pb-20">
+                <!-- Social Links -->
+                <div class="px-4 py-2 text-xs font-bold text-muted uppercase">Community</div>
+                <a href="https://t.me/R3V_X" target="_blank" class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors">
+                    <i class="fa-brands fa-telegram text-blue-400 w-5"></i> Developer
+                </a>
+                <a href="https://t.me/allinformation0173" target="_blank" class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors">
+                    <i class="fa-solid fa-users text-green-400 w-5"></i> Join Community
+                </a>
+                <a href="https://www.instagram.com/devxrev01/" target="_blank" class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors">
+                    <i class="fa-brands fa-instagram text-pink-500 w-5"></i> Follow Instagram
+                </a>
+                <div class="h-px bg-white/5 mx-4 my-2"></div>
+
+                <!-- Snippets -->
+                <div class="px-4 py-2 text-xs font-bold text-muted uppercase">Code Snippets</div>
+                <div id="snippets-list" class="grid grid-cols-2 gap-2 px-4 mb-2">
+                    <button class="bg-surface hover:bg-hoverBg border border-border rounded-lg py-2 px-3 text-xs text-text transition-colors text-left" onclick="window.cmdRunAction('insert-snippet', 'def')">
+                        <span class="text-accent">def</span> func
+                    </button>
+                    <button class="bg-surface hover:bg-hoverBg border border-border rounded-lg py-2 px-3 text-xs text-text transition-colors text-left" onclick="window.cmdRunAction('insert-snippet', 'for')">
+                        <span class="text-accent">for</span> loop
+                    </button>
+                    <button class="bg-surface hover:bg-hoverBg border border-border rounded-lg py-2 px-3 text-xs text-text transition-colors text-left" onclick="window.cmdRunAction('insert-snippet', 'if')">
+                        <span class="text-accent">if</span>/else
+                    </button>
+                     <button class="bg-surface hover:bg-hoverBg border border-border rounded-lg py-2 px-3 text-xs text-text transition-colors text-left" onclick="window.cmdRunAction('insert-snippet', 'class')">
+                        <span class="text-accent">class</span>
+                    </button>
+                    <button class="bg-surface hover:bg-hoverBg border border-border rounded-lg py-2 px-3 text-xs text-text transition-colors text-left" onclick="window.cmdRunAction('insert-snippet', 'try')">
+                        <span class="text-accent">try</span>/except
+                    </button>
+                     <button class="bg-surface hover:bg-hoverBg border border-border rounded-lg py-2 px-3 text-xs text-text transition-colors text-left" onclick="window.cmdRunAction('insert-snippet', 'import')">
+                        <span class="text-accent">import</span>
+                    </button>
+                </div>
+                <div class="h-px bg-white/5 mx-4 my-2"></div>
+
+                <!-- AI Tools -->
+                <div class="px-4 py-2 text-xs font-bold text-accent uppercase tracking-wider">AI Tools</div>
+                <button id="btn-ai-workspace" class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors">
+                    <i class="fa-solid fa-robot text-accent w-5"></i> AI Workspace <span class="ml-auto text-[10px] bg-accent/20 text-accent px-1.5 rounded">NEW</span>
+                </button>
+                <button id="btn-ai-refactor" class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors">
+                    <i class="fa-solid fa-wand-magic-sparkles text-accent w-5"></i> Refactor & Optimize
+                </button>
+                <button id="btn-ai-docs" class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors">
+                    <i class="fa-solid fa-file-signature text-blue-400 w-5"></i> Document This File
+                </button>
+                <button id="btn-ai-tests" class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors">
+                    <i class="fa-solid fa-vial text-green-400 w-5"></i> Generate Unit Tests
+                </button>
+                <button id="btn-ai-explain" class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors">
+                    <i class="fa-solid fa-lightbulb text-yellow-400 w-5"></i> Explain Logic
+                </button>
+                <button id="btn-saved-chats" class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors">
+                    <i class="fa-solid fa-bookmark text-yellow-500 w-5"></i> Saved Chats
+                </button>
+                <div class="h-px bg-white/5 mx-4 my-2"></div>
+
+                <!-- Editor Tools -->
+                <div class="px-4 py-2 text-xs font-bold text-muted uppercase">Edit</div>
+
+                <div class="grid grid-cols-2">
+                    <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('undo')">
+                        <i class="fa-solid fa-rotate-left w-5"></i> Undo
+                    </button>
+                    <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('redo')">
+                        <i class="fa-solid fa-rotate-right w-5"></i> Redo
+                    </button>
+                </div>
+                <div class="grid grid-cols-2">
+                    <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('copy-all')">
+                        <i class="fa-regular fa-copy w-5"></i> Copy All
+                    </button>
+                     <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('paste')">
+                        <i class="fa-solid fa-paste w-5"></i> Paste
+                    </button>
+                </div>
+                 <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('select-all')">
+                    <i class="fa-solid fa-check-double w-5"></i> Select All
+                </button>
+
+                <!-- Line Operations -->
+                <div class="h-px bg-white/5 mx-4 my-1"></div>
+                <div class="px-4 py-2 text-xs font-bold text-muted uppercase">Line Operations</div>
+
+                <div class="grid grid-cols-2">
+                     <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('duplicate-line')">
+                        <i class="fa-solid fa-clone w-5"></i> Duplicate
+                    </button>
+                    <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('delete-line')">
+                        <i class="fa-solid fa-trash-can w-5"></i> Delete
+                    </button>
+                </div>
+                <div class="grid grid-cols-2">
+                    <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('move-line-up')">
+                        <i class="fa-solid fa-arrow-up w-5"></i> Move Up
+                    </button>
+                    <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('move-line-down')">
+                        <i class="fa-solid fa-arrow-down w-5"></i> Move Down
+                    </button>
+                </div>
+                <div class="h-px bg-white/5 mx-4 my-1"></div>
+
+                <div class="px-4 py-2 text-xs font-bold text-muted uppercase">Code</div>
+                <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('comment')">
+                    <i class="fa-solid fa-comment-slash w-5"></i> Comment / Uncomment
+                </button>
+                 <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('format-pep8')">
+                    <i class="fa-solid fa-wand-magic-sparkles text-accent w-5"></i> Format Code (PEP-8)
+                </button>
+                 <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('format')">
+                    <i class="fa-solid fa-align-left w-5"></i> Auto Indent (Basic)
+                </button>
+                <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('find')">
+                    <i class="fa-solid fa-magnifying-glass w-5"></i> Find & Replace
+                </button>
+                <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('goto-line')">
+                    <i class="fa-solid fa-arrow-right-to-bracket w-5"></i> Go to Line
+                </button>
+                 <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('show-error')">
+                    <i class="fa-solid fa-triangle-exclamation text-red-400 w-5"></i> Show Next Error
+                </button>
+                <div class="h-px bg-white/5 mx-4 my-1"></div>
+
+                <div class="px-4 py-2 text-xs font-bold text-muted uppercase">Share & Export</div>
+                <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('download')">
+                    <i class="fa-solid fa-download text-accent w-5"></i> Download .py
+                </button>
+                <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('share')">
+                    <i class="fa-solid fa-share-nodes text-accent w-5"></i> Copy Share Link
+                </button>
+                <div class="h-px bg-white/5 mx-4 my-2"></div>
+
+                <div class="px-4 py-2 text-xs font-bold text-muted uppercase">Execution & Stats</div>
+                <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('restart')">
+                    <i class="fa-solid fa-power-off text-red-400 w-5"></i> Restart Program
+                </button>
+                <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('run-selected')">
+                    <i class="fa-solid fa-play w-5"></i> Run Selected Code
+                </button>
+                 <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('clear-console')">
+                    <i class="fa-solid fa-eraser w-5"></i> Clear Console
+                </button>
+                <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('stats')">
+                    <i class="fa-solid fa-chart-simple w-5"></i> Word Count
+                </button>
+                 <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('remove-extra-spaces')">
+                    <i class="fa-solid fa-broom w-5"></i> Remove Extra Spaces
+                </button>
+
+                 <!-- More -->
+                 <div class="h-px bg-white/5 mx-4 my-1"></div>
+                 <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('scroll-top')">
+                    <i class="fa-solid fa-arrow-up w-5"></i> Scroll to Top
+                </button>
+                <button class="w-full text-left px-6 py-3 hover:bg-hoverBg flex items-center gap-3 text-muted hover:text-text transition-colors" onclick="window.cmdRunAction('scroll-bottom')">
+                    <i class="fa-solid fa-arrow-down w-5"></i> Scroll to Bottom
+                </button>
+
+                <div class="h-px bg-white/5 mx-4 my-2"></div>
+                <div class="px-4 py-2 text-xs font-bold text-muted uppercase">Account</div>
+                <button id="btn-sign-out-sidebar" class="w-full text-left px-6 py-3 hover:bg-red-900/10 flex items-center gap-3 text-red-400 hover:text-red-300 transition-colors">
+                    <i class="fa-solid fa-right-from-bracket w-5"></i> Sign Out
+                </button>
+            </div>
+        </div>
+
+        <!-- Center: File Info -->
+        <div class="flex flex-col items-center min-w-0 shrink">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-code text-accent text-xs"></i>
+                <span class="font-bold text-text text-sm truncate max-w-[120px] sm:max-w-none" id="current-filename">main.py</span>
+            </div>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="flex items-center gap-1 sm:gap-3 overflow-x-auto hide-scrollbar">
+            <button id="btn-stop" class="bg-red-500 hover:bg-red-600 text-white w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-red-900/20 active:scale-95 transition-all mr-2 hidden shrink-0">
+                <i class="fa-solid fa-square text-sm"></i>
+            </button>
+            <button id="btn-run" onclick="window.cmdRunCode()" class="bg-accent hover:bg-accentHover text-black w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-green-900/20 active:scale-95 transition-all mr-1 sm:mr-2 shrink-0">
+                <i class="fa-solid fa-play text-sm"></i>
+            </button>
+            <!-- Magic Wand Removed -->
+            <button id="btn-auto-fix" title="Auto-Fix Error" class="w-8 h-8 flex items-center justify-center text-muted hover:text-accent active:scale-95 transition-colors shrink-0">
+                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+            </button>
+            <button id="btn-undo" class="w-8 h-8 flex items-center justify-center text-muted hover:text-text active:scale-95 transition-colors shrink-0">
+                <i class="fa-solid fa-rotate-left text-lg"></i>
+            </button>
+            <button id="btn-redo" class="w-8 h-8 flex items-center justify-center text-muted hover:text-text active:scale-95 transition-colors shrink-0">
+                <i class="fa-solid fa-rotate-right text-lg"></i>
+            </button>
+            <button id="btn-clear-code" class="w-8 h-8 flex items-center justify-center text-muted hover:text-red-400 active:scale-95 ml-1 transition-colors shrink-0">
+                <i class="fa-solid fa-trash-can text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area (Swappable Views) -->
+    <main class="flex-1 relative overflow-hidden bg-darker">
+
+        <!-- View 1: Editor (Active by default) -->
+        <div id="view-editor" class="absolute inset-0 flex flex-col">
+            <!-- AI Command Bar -->
+            <div id="ai-command-bar" class="hidden absolute top-4 left-4 right-4 z-30 animate-slide-down">
+                <div class="glass-card bg-surface/90 backdrop-blur-md rounded-xl p-2 flex items-center gap-2 border border-accent/20 shadow-2xl">
+                    <i class="fa-solid fa-wand-magic text-accent ml-2"></i>
+                    <input type="text" id="ai-command-input" placeholder="Describe code to generate (e.g. 'function to sort list')"
+                           class="flex-1 bg-transparent border-none text-white focus:ring-0 text-sm placeholder-gray-500 font-sans px-2">
+                    <button id="btn-ai-generate" class="bg-accent text-black text-xs font-bold px-3 py-2 rounded-lg hover:bg-accentHover transition-colors">
+                        Generate
+                    </button>
+                    <button id="btn-close-command-bar" class="w-8 h-8 flex items-center justify-center text-muted hover:text-white rounded-lg">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CodeMirror Container -->
+            <div id="editor-container" class="flex-1 relative font-mono text-sm overflow-hidden">
+                <!-- Editor mounts here -->
+            </div>
+
+
+            <!-- Console Output Pane (Collapsible Split View) -->
+            <div id="console-pane" class="h-1/3 min-h-[100px] max-h-[80%] bg-surface border-t border-border flex flex-col hidden transition-all duration-300">
+                <!-- Console Header -->
+                <div class="h-8 bg-[#252526] flex items-center justify-between px-3 border-b border-border select-none">
+                    <div class="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <i class="fa-solid fa-terminal text-[10px]"></i>
+                        <span>Console Output</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-stop-console" class="w-6 h-6 flex items-center justify-center text-red-500 hover:text-red-400 hover:bg-white/10 rounded hidden" title="Stop Program">
+                            <i class="fa-solid fa-square text-[10px]"></i>
+                        </button>
+                        <button id="btn-copy-console" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 rounded" title="Copy Output">
+                            <i class="fa-regular fa-copy text-[10px]"></i>
+                        </button>
+                        <button id="btn-clear-console" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 rounded" title="Clear Console">
+                            <i class="fa-solid fa-trash-can text-[10px]"></i>
+                        </button>
+                        <button id="btn-minimize-console" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 rounded">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Output -->
+                <div id="console-output" class="terminal-container">
+                    <div class="terminal-system">No output yet. Run your code to see results.</div>
+                </div>
+            </div>
+
+            <!-- Quick Keys Toolbar (Scrollable) -->
+            <div id="quick-keys" class="h-10 bg-surface border-t border-border flex items-center px-1 gap-1 overflow-x-auto whitespace-nowrap hide-scrollbar shrink-0 z-20">
+                <button class="key-btn" data-key="TAB">TAB</button>
+                <button class="key-btn" data-key="=">=</button>
+                <button class="key-btn" data-key="(">(</button>
+                <button class="key-btn" data-key=")">)</button>
+                <button class="key-btn" data-key=":">:</button>
+                <button class="key-btn" data-key='"'>"</button>
+                <button class="key-btn" data-key="'">'</button>
+                <button class="key-btn" data-key="[">[</button>
+                <button class="key-btn" data-key="]">]</button>
+                <button class="key-btn" data-key="#">#</button>
+                <button class="key-btn" data-key="{">{</button>
+                <button class="key-btn" data-key="}">}</button>
+                <button class="key-btn" data-key="+">+</button>
+                <button class="key-btn" data-key="-">-</button>
+                <button class="key-btn" data-key="*">*</button>
+                <button class="key-btn" data-key="/">/</button>
+            </div>
+        </div>
+
+        <!-- View 2: Files -->
+        <div id="view-files" class="absolute inset-0 bg-darker flex flex-col hidden">
+            <!-- Header -->
+            <div class="p-6 pb-2 bg-darker flex justify-between items-center z-10">
+                <h2 class="text-2xl font-bold text-text">File Explorer</h2>
+                <button id="btn-new-file" class="w-12 h-12 rounded-full bg-accent text-black flex items-center justify-center shadow-lg shadow-green-500/20 active:scale-95 transition-transform hover:bg-accentHover">
+                    <i class="fa-solid fa-plus text-xl"></i>
+                </button>
+            </div>
+
+            <!-- File List -->
+            <div id="file-list" class="flex-1 overflow-y-auto px-4 pb-20 space-y-3">
+                <!-- File items populated by JS -->
+            </div>
+        </div>
+
+        <!-- View 3: Terminal (Placeholder for now, could be same as console or interactive shell) -->
+        <div id="view-terminal" class="absolute inset-0 bg-black p-4 font-mono text-xs text-green-500 overflow-y-auto hidden">
+            <div class="mb-2">Python 3.11.2 (main, Pyodide v0.23.4)</div>
+            <div class="mb-2">[GCC 10.2.1 20210110] on webassembly/emscripten</div>
+            <div class="mb-2">Type "help", "copyright", "credits" or "license" for more information.</div>
+            <div class="flex gap-2">
+                <span class="text-blue-400">>>></span>
+                <span class="animate-pulse">_</span>
+            </div>
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                <i class="fa-solid fa-terminal text-6xl"></i>
+            </div>
+        </div>
+
+        <!-- View 4: Settings -->
+        <div id="view-settings" class="absolute inset-0 bg-darker flex flex-col hidden overflow-y-auto pb-20">
+            <!-- Settings Header -->
+            <div class="p-4 flex items-center justify-between border-b border-border bg-dark sticky top-0 z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-green-900/30 flex items-center justify-center text-accent">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <span class="text-lg font-bold text-text">PyExec Settings</span>
+                </div>
+                <button class="w-8 h-8 flex items-center justify-center text-muted">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+
+            <!-- Group: Appearance -->
+            <div class="px-4 py-3 text-xs font-bold text-accent uppercase tracking-wider mt-2">Appearance</div>
+            <div class="space-y-1">
+                <div id="setting-theme" class="flex items-center justify-between px-4 py-3 bg-surface mx-4 rounded-t-xl hover:bg-hoverBg active:bg-black/20 cursor-pointer transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-palette text-muted w-5"></i>
+                        <span>Theme</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-accent bg-green-900/20 px-2 py-1 rounded">
+                        <span id="current-theme-name">Monokai Dark</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </div>
+                </div>
+                <div id="setting-font-size" class="flex items-center justify-between px-4 py-3 bg-surface mx-4 rounded-b-xl hover:bg-hoverBg active:bg-black/20 border-t border-border cursor-pointer transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-text-height text-muted w-5"></i>
+                        <span>Font Size</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-muted">
+                        <span id="current-font-size">14px</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group: Editor -->
+            <div class="px-4 py-3 text-xs font-bold text-accent uppercase tracking-wider mt-2">Editor</div>
+            <div class="space-y-1">
+                <div id="setting-gutter-width" class="flex items-center justify-between px-4 py-3 bg-surface mx-4 rounded-t-xl hover:bg-hoverBg active:bg-black/20 cursor-pointer transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-ruler-horizontal text-muted w-5"></i>
+                        <span>Gutter Width</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-muted">
+                        <span id="current-gutter-width">Compact</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between px-4 py-3 bg-surface mx-4 border-t border-border transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-code text-muted w-5"></i>
+                        <span>Syntax Highlighting</span>
+                    </div>
+                    <!-- Toggle Switch -->
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between px-4 py-3 bg-surface mx-4 border-t border-border transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-floppy-disk text-muted w-5"></i>
+                        <span>Auto-save</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between px-4 py-3 bg-surface mx-4 rounded-b-xl border-t border-border transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-list-ol text-muted w-5"></i>
+                        <span>Line Numbers</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                    </label>
+                </div>
+            </div>
+
+             <!-- Group: Execution -->
+             <div class="px-4 py-3 text-xs font-bold text-accent uppercase tracking-wider mt-2">Execution</div>
+             <div class="space-y-1">
+                 <div class="flex items-center justify-between px-4 py-3 bg-surface mx-4 rounded-xl hover:bg-hoverBg active:bg-black/20 transition-colors">
+                     <div class="flex items-center gap-3">
+                         <i class="fa-brands fa-python text-muted w-5"></i>
+                         <span>Python Version</span>
+                     </div>
+                     <div class="flex items-center gap-2 text-xs text-muted">
+                         <span>3.11.2</span>
+                         <i class="fa-solid fa-lock text-[10px]"></i>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- Group: AI Configuration -->
+            <div class="px-4 py-3 text-xs font-bold text-accent uppercase tracking-wider mt-2">AI Configuration</div>
+            <div class="space-y-1">
+                 <div id="setting-ai-mode" class="flex items-center justify-between px-4 py-3 bg-surface mx-4 rounded-xl hover:bg-hoverBg active:bg-black/20 cursor-pointer transition-colors">
+                     <div class="flex items-center gap-3">
+                         <i class="fa-solid fa-robot text-muted w-5"></i>
+                         <span>AI Mode</span>
+                     </div>
+                     <div class="flex items-center gap-2 text-xs text-accent">
+                         <span id="current-ai-mode">Super Fast</span>
+                         <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- Library Manager Link (styled as setting) -->
+            <div class="px-4 py-3 text-xs font-bold text-accent uppercase tracking-wider mt-2">Packages</div>
+             <div class="space-y-1">
+                 <div id="btn-open-libs" class="flex items-center justify-between px-4 py-3 bg-surface mx-4 rounded-xl hover:bg-hoverBg active:bg-black/20 cursor-pointer transition-colors" onclick="window.uiSwitchView('view-libraries')">
+                     <div class="flex items-center gap-3">
+                         <i class="fa-solid fa-box-open text-muted w-5"></i>
+                         <span>Library Manager</span>
+                     </div>
+                     <div class="flex items-center gap-2 text-xs text-muted">
+                         <span>Manage Pip</span>
+                         <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- Group: Account -->
+            <div class="px-4 py-3 text-xs font-bold text-accent uppercase tracking-wider mt-2">Account</div>
+            <div class="space-y-1">
+                <div id="btn-sign-out-settings" class="flex items-center justify-between px-4 py-3 bg-surface mx-4 rounded-xl hover:bg-red-900/10 cursor-pointer transition-colors text-red-400">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-right-from-bracket w-5"></i>
+                        <span>Sign Out</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 5: Library Manager -->
+        <div id="view-libraries" class="absolute inset-0 bg-darker flex flex-col hidden z-20">
+             <!-- Header -->
+            <div class="p-4 flex items-center justify-between border-b border-border bg-dark sticky top-0 z-10">
+                <div class="flex items-center gap-3">
+                    <button id="btn-back-settings" onclick="window.uiSwitchView('view-settings')" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted hover:text-text active:scale-95 transition-transform">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <span class="text-lg font-bold text-text">Library Manager</span>
+                </div>
+                <div class="text-xs text-muted">PyPI</div>
+            </div>
+
+            <!-- Search -->
+            <div class="p-4 bg-darker border-b border-border">
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm"></i>
+                    <input type="text" id="lib-search" placeholder="Search PyPI (e.g. pandas)..."
+                           class="w-full bg-surface border border-border rounded-xl pl-9 pr-20 py-3 text-sm text-text focus:outline-none focus:border-accent placeholder-gray-500 bg-opacity-10">
+                    <button id="btn-install-lib" class="absolute right-2 top-1/2 -translate-y-1/2 bg-accent text-black px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-accentHover transition-colors">
+                        Install
+                    </button>
+                </div>
+            </div>
+
+            <!-- List -->
+            <div id="lib-list" class="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
+                <!-- Library items will be populated here -->
+                <div class="text-center text-muted text-xs mt-4">
+                    Popular libraries like numpy, pandas, and matplotlib are supported.
+                </div>
+            </div>
+        </div>
+
+        <!-- View 6: AI Workspace -->
+        <div id="view-ai-workspace" class="absolute inset-0 bg-darker flex flex-col hidden z-20">
+            <!-- Header -->
+            <div class="h-16 px-4 flex items-center justify-between border-b border-border bg-dark sticky top-0 z-10 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-green-900/30 flex items-center justify-center text-accent">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-lg font-bold text-text leading-tight">AI Workspace</span>
+                        <span id="ai-context-badge" class="text-[10px] text-muted">Initializing Context...</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btn-toggle-ai-mode" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 text-muted hover:text-text hover:bg-white/10 active:scale-95 transition-all mr-2 border border-white/5" title="Toggle Developer Mode">
+                        <i class="fa-solid fa-comment text-xs"></i>
+                        <span class="text-[10px] font-bold uppercase tracking-wider">Chat</span>
+                    </button>
+                    <button id="btn-save-ai-file" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted hover:text-accent active:scale-95 transition-transform" title="Save Chat to File">
+                        <i class="fa-solid fa-file-export text-xs"></i>
+                    </button>
+                    <button id="btn-clear-ai-chat" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted hover:text-red-400 active:scale-95 transition-transform" title="Clear Chat">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                    <button id="btn-close-ai-workspace" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted hover:text-text active:scale-95 transition-transform">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Output -->
+            <div id="ai-chat-output" class="flex-1 overflow-y-auto p-4 space-y-4 pb-4">
+                <div class="text-center text-muted text-sm mt-10 opacity-50">
+                    <i class="fa-solid fa-wand-magic-sparkles text-4xl mb-3 block"></i>
+                    <p>Ask me anything about your project.</p>
+                    <p class="text-xs mt-1">I have access to all your files.</p>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 bg-dark border-t border-border shrink-0 pb-safe">
+                <div class="flex items-end gap-2 bg-surface p-2 rounded-xl border border-white/5 focus-within:border-accent/50 transition-colors">
+                    <textarea id="ai-chat-input" rows="1" placeholder="Type a message..." class="flex-1 bg-transparent border-none text-white focus:ring-0 text-sm placeholder-gray-500 font-sans resize-none max-h-32 py-2"></textarea>
+
+                    <button id="btn-ai-stop" class="w-10 h-10 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center hover:bg-red-500/20 active:scale-95 transition-all hidden">
+                         <i class="fa-solid fa-stop"></i>
+                    </button>
+
+                    <button id="btn-ai-send" class="w-10 h-10 rounded-lg bg-accent text-black flex items-center justify-center hover:bg-accentHover active:scale-95 transition-all shadow-lg shadow-green-900/20">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 7: Saved Chats -->
+        <div id="view-saved-chats" class="absolute inset-0 bg-darker flex flex-col hidden z-20">
+            <!-- Content Populated by JS -->
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="safe-bottom bg-dark border-t border-border flex items-center justify-around shrink-0 z-50">
+        <button class="nav-btn flex flex-col items-center gap-1 w-full h-full justify-center text-muted hover:text-text transition-colors" data-target="view-ai-workspace">
+            <div class="w-12 h-8 rounded-full flex items-center justify-center icon-container transition-colors">
+                <i class="fa-solid fa-robot text-lg"></i>
+            </div>
+            <span class="text-[10px] font-medium">AI</span>
+        </button>
+        <button class="nav-btn active flex flex-col items-center gap-1 w-full h-full justify-center text-accent" data-target="view-editor">
+            <div class="w-12 h-8 rounded-full flex items-center justify-center bg-green-900/20 icon-container transition-colors">
+                <i class="fa-solid fa-code text-lg"></i>
+            </div>
+            <span class="text-[10px] font-medium">Editor</span>
+        </button>
+        <button class="nav-btn flex flex-col items-center gap-1 w-full h-full justify-center text-muted hover:text-text transition-colors" data-target="view-files">
+            <div class="w-12 h-8 rounded-full flex items-center justify-center icon-container transition-colors">
+                <i class="fa-regular fa-folder text-lg"></i>
+            </div>
+            <span class="text-[10px] font-medium">Files</span>
+        </button>
+        <button class="nav-btn flex flex-col items-center gap-1 w-full h-full justify-center text-muted hover:text-text transition-colors" data-target="view-settings">
+            <div class="w-12 h-8 rounded-full flex items-center justify-center icon-container transition-colors">
+                <i class="fa-solid fa-gear text-lg"></i>
+            </div>
+            <span class="text-[10px] font-medium">Settings</span>
+        </button>
+    </nav>
+
+    <!-- Modals (Hidden) -->
+
+    <!-- Profile Edit Modal -->
+    <div id="modal-profile-edit" class="fixed inset-0 bg-black/80 z-[85] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass-card w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4 animate-slide-up">
+            <div class="flex justify-between items-center border-b border-white/10 pb-4">
+                <h3 class="text-lg font-bold text-white">Edit Profile</h3>
+                <button id="btn-close-profile-edit" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted hover:text-text">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="flex flex-col items-center gap-4 py-4">
+                <div class="relative group cursor-pointer" onclick="document.getElementById('input-avatar-upload').click()">
+                    <div id="edit-avatar-preview" class="w-20 h-20 rounded-full bg-surface border-2 border-white/10 overflow-hidden flex items-center justify-center text-xl font-bold text-muted">
+                        GD
+                        <img id="edit-avatar-img" class="absolute inset-0 w-full h-full object-cover hidden">
+                    </div>
+                    <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-camera text-white"></i>
+                    </div>
+                </div>
+                <!-- Hidden Input Reuse -->
+                <input type="file" id="input-avatar-upload" accept="image/*" class="hidden">
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <input type="text" id="edit-firstname" placeholder="First Name" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-accent placeholder-gray-500">
+                <input type="text" id="edit-surname" placeholder="Surname" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-accent placeholder-gray-500">
+            </div>
+
+            <button id="btn-save-profile" class="w-full bg-accent text-black font-bold py-3 rounded-xl hover:bg-accentHover transition-colors mt-2">
+                Save Changes
+            </button>
+        </div>
+    </div>
+
+    <!-- Selection Modal (Generic) -->
+    <div id="modal-selection" class="fixed inset-0 bg-black/80 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-surface w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl border border-border flex flex-col max-h-[60vh]">
+            <div class="p-4 border-b border-border flex justify-between items-center bg-dark">
+                <h3 id="modal-selection-title" class="font-bold text-text">Select Option</h3>
+                <button id="btn-close-selection" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted hover:text-text">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="modal-selection-list" class="flex-1 overflow-y-auto p-2 bg-darker space-y-1">
+                <!-- Items populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- PWA Offline Toast -->
+    <div id="pwa-toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-surface border border-accent/20 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-3 translate-y-20 opacity-0 transition-all duration-500 pointer-events-none">
+        <i class="fa-solid fa-circle-check text-accent"></i>
+        <span class="text-sm font-medium">Ready for Offline Use</span>
+    </div>
+
+    <!-- Offline Mode Popup -->
+    <div id="modal-offline-popup" class="fixed inset-0 bg-black/80 z-[120] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass-card w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4 animate-slide-up border border-white/10 relative overflow-hidden">
+             <!-- Decorative Background -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="flex flex-col items-center text-center gap-3 z-10">
+                <div class="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-2">
+                    <i class="fa-solid fa-wifi text-3xl text-blue-400"></i>
+                </div>
+                <h2 class="text-xl font-bold text-white">You're in Offline Mode</h2>
+                <p class="text-sm text-gray-400 leading-relaxed">
+                    Internet connection is unavailable. You can still edit code and run programs locally.
+                </p>
+            </div>
+
+            <div class="bg-white/5 rounded-xl p-4 z-10">
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fa-solid fa-check text-green-400 w-5"></i> Code Editor & Files
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fa-solid fa-check text-green-400 w-5"></i> Run Python Code
+                    </div>
+                     <div class="flex items-center gap-3 text-sm text-gray-500">
+                        <i class="fa-solid fa-xmark text-red-400 w-5"></i> AI Assistant
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-close-offline-popup" class="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors z-10 shadow-lg">
+                Okay, Got It
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="./script.js"></script>
+    <script type="module" src="./js/ui.js"></script>
+
+    <!-- PWA Service Worker Registration -->
+    </div> <!-- End app-content -->
+
+    <script>
+        // Use vite-plugin-pwa virtual module if needed, but 'auto' injects it.
+        // We keep the toast logic but rely on the plugin's registration.
+        // The plugin will emit events that we might want to listen to if we used the virtual module.
+        // Since we use injectRegister: 'auto', it injects a simple registration script.
+
+        // However, to show the "Offline Ready" toast, we might need to hook into the registration if possible.
+        // But for now, we remove the manual registration to avoid conflicts.
+
+        function showOfflineToast() {
+            const toast = document.getElementById('pwa-toast');
+            if (toast) {
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 4000);
+            }
+        }
+    </script>
+</body>
+</html>

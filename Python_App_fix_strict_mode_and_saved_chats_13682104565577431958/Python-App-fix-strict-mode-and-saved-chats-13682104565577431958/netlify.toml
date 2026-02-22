@@ -1,0 +1,26 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+
+# Enable SharedArrayBuffer for Pyodide
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+
+# Disable COOP/COEP for Auth Bridge to allow Google Popup
+[[headers]]
+  for = "/auth.html"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "unsafe-none"
+    Cross-Origin-Embedder-Policy = "unsafe-none"
+
+# Handle SPA routing (fallback to index.html)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

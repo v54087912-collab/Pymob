@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyMob - Sign In</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0f172a; color: #e2e8f0; font-family: sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="bg-slate-900 flex items-center justify-center h-screen overflow-hidden">
+
+    <div class="glass-card w-full max-w-sm rounded-2xl p-8 flex flex-col items-center gap-6 shadow-2xl relative overflow-hidden bg-slate-800/50 backdrop-blur-md border border-white/10">
+        <!-- Glow Effect -->
+        <div class="absolute -top-20 -left-20 w-40 h-40 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-20 -right-20 w-40 h-40 bg-green-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Header -->
+        <div class="text-center z-10 relative">
+            <h1 class="text-2xl font-bold text-white mb-2">Welcome to PyMob</h1>
+            <p class="text-sm text-gray-400">Sign in to continue</p>
+        </div>
+
+         <!-- Email Auth Form -->
+         <div class="w-full flex flex-col gap-3 z-10 relative">
+            <input type="email" id="email" placeholder="Email Address" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500/50 placeholder-gray-500 transition-colors">
+            <input type="password" id="pass" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500/50 placeholder-gray-500 transition-colors">
+
+            <div class="flex gap-3 mt-2">
+                <button id="btn-login" class="flex-1 bg-cyan-500/10 text-cyan-400 font-bold py-3 rounded-xl hover:bg-cyan-500/20 border border-cyan-500/20 transition-all active:scale-95">
+                    Log In
+                </button>
+                <button id="btn-signup" class="flex-1 bg-white/5 text-gray-300 font-bold py-3 rounded-xl hover:bg-white/10 border border-white/10 transition-all active:scale-95">
+                    Sign Up
+                </button>
+            </div>
+        </div>
+
+        <div id="msg-box" class="text-xs text-red-400 mt-2 hidden text-center w-full z-10 relative"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+
+        // Environment Variable Access via Vite injection
+        const getEnv = (key) => {
+            try {
+                return (import.meta.env && import.meta.env[key]) || "";
+            } catch (e) {
+                return "";
+            }
+        };
+
+        const firebaseConfig = {
+            apiKey: getEnv("VITE_FIREBASE_API_KEY"),
+            authDomain: getEnv("VITE_FIREBASE_AUTH_DOMAIN"),
+            projectId: getEnv("VITE_FIREBASE_PROJECT_ID"),
+            storageBucket: getEnv("VITE_FIREBASE_STORAGE_BUCKET"),
+            messagingSenderId: getEnv("VITE_FIREBASE_MESSAGING_SENDER_ID"),
+            appId: getEnv("VITE_FIREBASE_APP_ID"),
+            measurementId: getEnv("VITE_FIREBASE_MEASUREMENT_ID")
+        };
+
+        let app, auth;
+        const msgBox = document.getElementById('msg-box');
+
+        function showMessage(msg, isError = true) {
+            msgBox.textContent = msg;
+            msgBox.className = isError ? "text-xs text-red-400 mt-2 text-center w-full z-10 relative" : "text-xs text-green-400 mt-2 text-center w-full z-10 relative";
+            msgBox.classList.remove('hidden');
+        }
+
+        try {
+            if (!firebaseConfig.apiKey) {
+                showMessage("Firebase config missing. Auth unavailable.");
+            } else {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+
+                // Set persistence immediately
+                setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        // User is authenticated, redirect to main app
+                        showMessage("Logged in! Redirecting...", false);
+                        setTimeout(() => {
+                            window.location.href = "/";
+                        }, 500);
+                    }
+                });
+            }
+        } catch (e) {
+            console.error(e);
+            showMessage("Init Error: " + e.message);
+        }
+
+        async function handleEmailLogin() {
+             const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            if(!email || !pass) { showMessage("Enter email and password."); return; }
+             try {
+                showMessage("Logging in...", false);
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                showMessage(error.message);
+            }
+        }
+
+        async function handleEmailSignup() {
+             const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            if(!email || !pass) { showMessage("Enter email and password."); return; }
+             try {
+                showMessage("Creating account...", false);
+                await createUserWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                showMessage(error.message);
+            }
+        }
+
+        document.getElementById('btn-login').addEventListener('click', handleEmailLogin);
+        document.getElementById('btn-signup').addEventListener('click', handleEmailSignup);
+
+    </script>
+</body>
+</html>

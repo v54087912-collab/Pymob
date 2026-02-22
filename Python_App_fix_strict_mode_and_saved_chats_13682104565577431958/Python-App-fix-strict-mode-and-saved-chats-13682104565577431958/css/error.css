@@ -1,0 +1,42 @@
+/* Inline Error Styles */
+.cm-error-line {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    text-decoration: underline wavy #ef4444;
+}
+
+.cm-error-widget {
+    background-color: #3f1515; /* Darker red bg */
+    border: 1px solid #ef4444;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin: 4px 0 8px 0;
+    color: #fca5a5; /* Light red text */
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    pointer-events: none; /* Let clicks pass through if needed, though usually on scroll */
+}
+
+.cm-error-icon {
+    color: #ef4444;
+    font-size: 16px;
+    margin-top: 1px;
+}
+
+.cm-error-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.cm-error-title {
+    font-weight: 700;
+    color: #ef4444;
+    margin-bottom: 2px;
+}
+
+.cm-error-msg {
+    color: #e5e7eb;
+}
