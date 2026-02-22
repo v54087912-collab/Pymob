@@ -1,0 +1,41 @@
+name: Auto Unzip + Delete ZIP (Any Folder)
+
+on:
+  push:
+    paths:
+      - "**/*.zip"
+
+permissions:
+  contents: write
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install unzip
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - name: Unzip all ZIPs and delete them
+        run: |
+          set -e
+          find . -type f -name "*.zip" -print0 | while IFS= read -r -d '' z; do
+            dir="$(dirname "$z")"
+            base="$(basename "$z" .zip)"
+            target="$dir/$base"
+
+            mkdir -p "$target"
+            unzip -o "$z" -d "$target"
+
+            rm -f "$z"
+          done
+
+      - name: Commit extracted files and deletions
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Auto unzip and delete ZIPs" || echo "No changes"
+          git push
